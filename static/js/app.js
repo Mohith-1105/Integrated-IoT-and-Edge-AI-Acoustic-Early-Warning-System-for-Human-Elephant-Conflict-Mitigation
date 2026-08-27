@@ -35,6 +35,8 @@ function fetchStatusAndNodes() {
     if (!window.mapInitialized) {
       initGISMap(nodes, status.herd_info);
       window.mapInitialized = true;
+    } else if (typeof updateMapNodes === 'function') {
+      updateMapNodes(nodes, status.herd_info);
     }
 
     // Update Header Status Indicator

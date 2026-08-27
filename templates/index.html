@@ -35,7 +35,6 @@
       </div>
       <div class="title-group">
         <h1>Integrated IoT & Edge-AI Acoustic Early Warning System</h1>
-        <p>Human-Elephant Conflict Mitigation • Bannerghatta National Park Fringe</p>
       </div>
     </div>
 
@@ -60,66 +59,167 @@
   <!-- Navigation Tabs Bar -->
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('map-tab')">
-      <i class="fa-solid fa-map-location-dot"></i> Live GIS Corridor Map
+      <i class="fa-solid fa-map-location-dot"></i> Live GIS Corridor Map & Acoustic Monitoring
     </button>
     <button class="nav-tab" onclick="switchTab('sensor-tab')">
       <i class="fa-solid fa-microchip"></i> IoT Sensor Nodes & Telemetry
-    </button>
-    <button class="nav-tab" onclick="switchTab('ai-tab')">
-      <i class="fa-solid fa-brain"></i> Edge-AI Acoustic Classifier
-    </button>
-    <button class="nav-tab" onclick="switchTab('dss-tab')">
-      <i class="fa-solid fa-bullhorn"></i> Deterrent Controls & Action Plan
     </button>
   </nav>
 
   <!-- Main Container -->
   <main class="main-container">
 
-    <!-- System Status Banner -->
-    <div id="emergency-banner" class="threat-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1)); border-color: var(--border-accent); box-shadow: var(--shadow-glow-green); animation: none;">
-      <div class="threat-info">
-        <div class="threat-icon-large">
-          <i class="fa-solid fa-shield-check" style="color: #10b981;"></i>
-        </div>
-        <div class="threat-details">
-          <h3 style="color: #6ee7b7;">SYSTEM STATUS: 6 Sensor Field Nodes Online • All Sectors Clear</h3>
-          <p style="color: var(--text-muted);">Continuously monitoring Bannerghatta National Park Fringe Boundary. No elephant intrusions detected.</p>
-        </div>
-      </div>
-      <div class="threat-actions">
-        <button class="btn-alert" style="background: var(--accent-emerald);" onclick="triggerAllDeterrents()">
-          <i class="fa-solid fa-bolt"></i> Manual Deterrent Test
-        </button>
-        <button class="btn-secondary-alert" onclick="broadcastSMSAlert()">
-          <i class="fa-solid fa-paper-plane"></i> Broadcast System Test SMS
-        </button>
-      </div>
-    </div>
-
     <!-- TAB 1: GIS Map & Overview Dashboard -->
     <div id="map-tab" class="tab-pane active">
       <div class="grid-dashboard">
         
         <!-- Left: Map Container -->
-        <div class="glass-card">
-          <div class="card-header">
-            <h2><i class="fa-solid fa-earth-asia" style="color: #10b981;"></i> <span id="map-title-text">Bannerghatta National Park - Live Elephant Trajectory GIS Map</span></h2>
-            <span class="header-tag" id="map-location-tag">GPS Live Telemetry</span>
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          
+          <!-- GIS Map Card -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-earth-asia" style="color: #10b981;"></i> <span id="map-title-text">Bannerghatta National Park - Live Elephant Trajectory GIS Map</span></h2>
+              <span class="header-tag" id="map-location-tag">GPS Live Telemetry</span>
+            </div>
+
+            <div class="map-controls-bar" style="justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+              <div style="font-size: 0.82rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;" id="live-cursor-coordinates">
+                <i class="fa-solid fa-location-crosshairs" style="color: #10b981;"></i> <span>Move cursor on map to inspect location...</span>
+              </div>
+            </div>
+
+            <div id="map-container"></div>
           </div>
 
-          <div class="map-controls-bar" style="justify-content: flex-start;">
-            <div style="font-size: 0.82rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;" id="live-cursor-coordinates">
-              <i class="fa-solid fa-location-crosshairs" style="color: #10b981;"></i> <span>Move cursor on map to inspect location...</span>
+          <!-- Non-Invasive Deterrent Actuators Panel -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-sliders" style="color: var(--accent-cyan);"></i> Non-Invasive Deterrent Actuators</h2>
+              <span class="header-tag">Autonomous & Manual Controls</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+              Safely redirect elephants away from human settlements using bio-acoustic deterrent sounds and strobe lights without causing physiological harm.
+            </p>
+
+            <div class="deterrent-controls">
+              
+              <!-- Bio Acoustic Card -->
+              <div class="deterrent-card active" id="card-bio">
+                <div class="deterrent-icon">
+                  <i class="fa-solid fa-volume-high"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 0.88rem;">Bio-Acoustic Speaker</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Predator Warning Sound</div>
+                <label class="toggle-switch" style="margin-top: 0.3rem;">
+                  <input type="checkbox" id="toggle-bio" checked onchange="toggleDeterrent('bio_acoustic')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- Strobe Light Card -->
+              <div class="deterrent-card active" id="card-strobe">
+                <div class="deterrent-icon">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 0.88rem;">LED Strobe Lights</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">High-Intensity Flashing</div>
+                <label class="toggle-switch" style="margin-top: 0.3rem;">
+                  <input type="checkbox" id="toggle-strobe" checked onchange="toggleDeterrent('strobe_light')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- High Decibel Siren Card -->
+              <div class="deterrent-card" id="card-siren">
+                <div class="deterrent-icon">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 0.88rem;">High-Decibel Siren</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">110dB Acoustic Siren</div>
+                <label class="toggle-switch" style="margin-top: 0.3rem;">
+                  <input type="checkbox" id="toggle-siren" onchange="toggleDeterrent('siren')">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- SMS Broadcaster Card -->
+              <div class="deterrent-card active" id="card-sms">
+                <div class="deterrent-icon">
+                  <i class="fa-solid fa-comment-sms"></i>
+                </div>
+                <div style="font-weight: 600; font-size: 0.88rem;">Villager SMS Alert</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Auto Mobile Dispatch</div>
+                <button class="audio-btn" style="margin-top: 0.3rem; padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="broadcastSMSAlert()">
+                  Send SMS Now
+                </button>
+              </div>
+
             </div>
           </div>
 
-          <div id="map-container"></div>
         </div>
 
-        <!-- Right: Real-time Incident Feed & Quick Summary -->
+        <!-- Right: Real-time Acoustic Waveform & System Status Overview -->
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          
+
+          <!-- Real-time Acoustic Waveform & Edge-AI Engine Card -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2><i class="fa-solid fa-wave-square" style="color: #10b981;"></i> Real-time Acoustic Waveform & Edge-AI Classifier</h2>
+              <span class="header-tag">TensorFlow Lite / ESP32</span>
+            </div>
+
+            <div class="dsp-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              
+              <!-- Waveform Signal -->
+              <div>
+                <h3 style="font-size: 0.88rem; margin-bottom: 0.4rem; color: var(--text-muted);">
+                  <i class="fa-solid fa-wave-square"></i> Real-time Acoustic Waveform Signal (DSP Filter)
+                </h3>
+                <canvas id="waveform-canvas" class="canvas-visualizer" style="height: 140px;"></canvas>
+              </div>
+
+              <!-- MFCC Matrix Feature Extractor & Telemetry -->
+              <div>
+                <h3 style="font-size: 0.88rem; margin-top: 0.2rem; margin-bottom: 0.4rem; color: var(--text-muted);">
+                  <i class="fa-solid fa-bars-staggered"></i> MFCC Matrix Feature Extractor (12 Coefficients)
+                </h3>
+                <div id="mfcc-matrix" class="mfcc-matrix"></div>
+
+                <div style="margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--accent-emerald); display: flex; align-items: center; justify-content: space-between;">
+                  <span><i class="fa-solid fa-satellite-dish"></i> Autonomous ESP32 Telemetry: <strong id="edge-telemetry-status">Active Monitoring</strong></span>
+                  <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); padding: 0.2rem 0.5rem; border-radius: 10px;" id="edge-telemetry-badge">Field Mesh</span>
+                </div>
+              </div>
+
+              <!-- ANN Model Output & Confidence Gauge -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <h3 style="font-size: 0.9rem; text-align: center; margin-bottom: 0.4rem;">ANN Model Inference Result</h3>
+                
+                <div class="confidence-gauge-container" style="padding: 0.4rem;">
+                  <div class="gauge-circle" id="gauge-bg" style="width: 120px; height: 120px; background: conic-gradient(var(--accent-emerald) 0% 0%, rgba(255,255,255,0.08) 0% 100%);">
+                    <div class="gauge-inner" style="width: 94px; height: 94px;">
+                      <div class="gauge-value" id="gauge-val" style="font-size: 1.4rem; color: var(--accent-emerald);">0.0%</div>
+                      <div class="gauge-label" style="font-size: 0.65rem;">Confidence</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 0.4rem;">
+                  <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-emerald);" id="ai-detected-class">
+                    System Standby - Hardware Interface Ready
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;" id="ai-decision-text">
+                    Status: Sensor mesh online • Standing by for telemetry.
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- System Status Overview Card -->
           <div class="glass-card">
             <div class="card-header">
               <h2><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> System Status Overview</h2>
@@ -149,28 +249,6 @@
             </div>
           </div>
 
-          <!-- Active Deterrents Panel -->
-          <div class="glass-card">
-            <div class="card-header">
-              <h2><i class="fa-solid fa-volume-high" style="color: #f59e0b;"></i> Deterrent Status</h2>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-solid fa-bullhorn" style="color: #10b981;"></i> Bio-Acoustic Warning Speaker</span>
-                <span class="node-badge safe" id="status-bio">STANDBY</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-solid fa-lightbulb" style="color: #06b6d4;"></i> High-Intensity LED Strobe</span>
-                <span class="node-badge safe" id="status-strobe">STANDBY</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-solid fa-bell" style="color: #ef4444;"></i> High-Decibel Siren</span>
-                <span class="node-badge safe" id="status-siren">STANDBY</span>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -193,158 +271,6 @@
       </div>
     </div>
 
-    <!-- TAB 3: Edge-AI Acoustic Engine & Classifier -->
-    <div id="ai-tab" class="tab-pane">
-      <div class="glass-card">
-        <div class="card-header">
-          <h2><i class="fa-solid fa-brain" style="color: #10b981;"></i> Edge-AI Acoustic DSP Engine & ANN Classifier</h2>
-          <span class="header-tag">TensorFlow Lite / ESP32 Microcontroller</span>
-        </div>
-
-        <div class="dsp-container">
-          
-          <!-- Left: Waveform & Spectrogram -->
-          <div>
-            <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-muted);">
-              <i class="fa-solid fa-wave-square"></i> Real-time Acoustic Waveform Signal (Built-in DSP Filter)
-            </h3>
-            <canvas id="waveform-canvas" class="canvas-visualizer"></canvas>
-
-            <h3 style="font-size: 0.95rem; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-muted);">
-              <i class="fa-solid fa-bars-staggered"></i> MFCC Matrix Feature Extractor (12 Coefficients)
-            </h3>
-            <div id="mfcc-matrix" class="mfcc-matrix"></div>
-
-            <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--accent-emerald); display: flex; align-items: center; justify-content: space-between;">
-              <span><i class="fa-solid fa-satellite-dish"></i> Autonomous ESP32 Acoustic Telemetry: <strong id="edge-telemetry-status">Active Monitoring</strong></span>
-              <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.25rem 0.6rem; border-radius: 12px;" id="edge-telemetry-badge">Real-time Field Mesh</span>
-            </div>
-          </div>
-
-          <!-- Right: ANN Model Output & Multi-Sensor Fusion -->
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
-            
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
-              <h3 style="font-size: 1rem; text-align: center; margin-bottom: 0.75rem;">ANN Model Inference Result</h3>
-              
-              <div class="confidence-gauge-container">
-                <div class="gauge-circle" id="gauge-bg" style="background: conic-gradient(var(--accent-emerald) 0% 0%, rgba(255,255,255,0.08) 0% 100%);">
-                  <div class="gauge-inner">
-                    <div class="gauge-value" id="gauge-val" style="color: var(--accent-emerald);">0.0%</div>
-                    <div class="gauge-label">ANN Confidence</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style="text-align: center; margin-top: 0.75rem;">
-                <div style="font-size: 1.05rem; font-weight: 700; color: var(--accent-emerald);" id="ai-detected-class">
-                  System Standby - Hardware Interface Ready (No Intrusions)
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;" id="ai-decision-text">
-                  Status: Sensor mesh online • Standing by for field acoustic telemetry.
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 4: Module 5 Decision Support & Deterrents -->
-    <div id="dss-tab" class="tab-pane">
-      <div class="glass-card">
-        <div class="card-header">
-          <h2><i class="fa-solid fa-bullhorn" style="color: #f59e0b;"></i> Decision Support System (DSS) & Actuator Control</h2>
-          <span class="header-tag">Autonomous & Manual Override</span>
-        </div>
-
-        <div class="dss-grid">
-          
-          <!-- Left: Deterrent Actuators Controls -->
-          <div class="deterrent-panel">
-            <h3 style="font-family: var(--font-title); font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-              <i class="fa-solid fa-sliders" style="color: var(--accent-cyan);"></i> Non-Invasive Deterrent Actuators
-            </h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">
-              Safely redirect elephants away from human settlements using bio-acoustic deterrent sounds and strobe lights without causing physiological harm.
-            </p>
-
-            <div class="deterrent-controls">
-              
-              <!-- Bio Acoustic Card -->
-              <div class="deterrent-card active" id="card-bio">
-                <div class="deterrent-icon">
-                  <i class="fa-solid fa-volume-high"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 0.9rem;">Bio-Acoustic Speaker</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">Predator Warning Sound</div>
-                <label class="toggle-switch" style="margin-top: 0.4rem;">
-                  <input type="checkbox" id="toggle-bio" checked onchange="toggleDeterrent('bio_acoustic')">
-                  <span class="slider"></span>
-                </label>
-              </div>
-
-              <!-- Strobe Light Card -->
-              <div class="deterrent-card active" id="card-strobe">
-                <div class="deterrent-icon">
-                  <i class="fa-solid fa-lightbulb"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 0.9rem;">LED Strobe Lights</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">High-Intensity Flashing</div>
-                <label class="toggle-switch" style="margin-top: 0.4rem;">
-                  <input type="checkbox" id="toggle-strobe" checked onchange="toggleDeterrent('strobe_light')">
-                  <span class="slider"></span>
-                </label>
-              </div>
-
-              <!-- High Decibel Siren Card -->
-              <div class="deterrent-card" id="card-siren">
-                <div class="deterrent-icon">
-                  <i class="fa-solid fa-bell"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 0.9rem;">High-Decibel Siren</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">110dB Acoustic Siren</div>
-                <label class="toggle-switch" style="margin-top: 0.4rem;">
-                  <input type="checkbox" id="toggle-siren" onchange="toggleDeterrent('siren')">
-                  <span class="slider"></span>
-                </label>
-              </div>
-
-              <!-- SMS Broadcaster Card -->
-              <div class="deterrent-card active" id="card-sms">
-                <div class="deterrent-icon">
-                  <i class="fa-solid fa-comment-sms"></i>
-                </div>
-                <div style="font-weight: 600; font-size: 0.9rem;">Villager SMS Alert</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);">Auto Mobile Dispatch</div>
-                <button class="audio-btn" style="margin-top: 0.4rem; padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="broadcastSMSAlert()">
-                  Send SMS Now
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Right: AI Recommendations Engine -->
-          <div>
-            <h3 style="font-family: var(--font-title); font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-              <i class="fa-solid fa-robot" style="color: var(--accent-emerald);"></i> Decision Support System Recommendations
-            </h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">
-              Historical pattern analysis + spatial risk scoring engine suggests real-time response actions for forest guards and local authorities.
-            </p>
-
-            <div class="recommendations-list" id="dss-recommendations-list">
-              <!-- Rendered dynamically by dss.js -->
-            </div>
-          </div>
-
-        </div>
-      </div>
     </div>
 
   </main>

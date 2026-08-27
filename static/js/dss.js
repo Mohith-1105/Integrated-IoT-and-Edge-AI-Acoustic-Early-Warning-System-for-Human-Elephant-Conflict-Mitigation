@@ -82,13 +82,11 @@ function updateDeterrentUI(state) {
     if (state.strobe_light_active) {
       cardStrobe.classList.add('active');
       toggleStrobe.checked = true;
-      if (statusStrobe) { statusStrobe.textContent = 'FLASHING (12Hz)'; statusStrobe.className = 'node-badge alert'; }
-      if (strobeOverlay) strobeOverlay.classList.add('active');
+      if (statusStrobe) { statusStrobe.textContent = 'ACTIVE'; statusStrobe.className = 'node-badge alert'; }
     } else {
       cardStrobe.classList.remove('active');
       toggleStrobe.checked = false;
       if (statusStrobe) { statusStrobe.textContent = 'STANDBY'; statusStrobe.className = 'node-badge safe'; }
-      if (strobeOverlay) strobeOverlay.classList.remove('active');
     }
   }
 

@@ -14,12 +14,22 @@ function initGISMap(nodes, herdInfo) {
   const mapElement = document.getElementById('map-container');
   if (!mapElement) return;
 
+  // Safely teardown existing map instance if re-initialized to prevent Leaflet container duplicate errors
+  if (leafletMap !== null) {
+    leafletMap.remove();
+    leafletMap = null;
+    nodeMarkers = [];
+    herdMarkers = [];
+    riskCircles = [];
+    pathPolyline = null;
+  }
+
   // Define single full world boundary (prevents infinite horizontal tile looping)
   const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
 
-  // Initialize Map centered at Bannerghatta NP with full world view capability
+  // Initialize Map centered across the Southern Elephant Corridor (Bannerghatta, Anekal, Thally, Jawalagiri, Ramanagara)
   leafletMap = L.map('map-container', {
-    center: [12.7500, 77.6300],
+    center: [12.6800, 77.6600],
     zoom: 11,
     minZoom: 2,
     maxZoom: 18,
@@ -60,7 +70,7 @@ function initGISMap(nodes, herdInfo) {
   // Custom Icon Definitions
   const elephantIcon = L.divIcon({
     className: 'custom-leaflet-icon',
-    html: `<div style="background: rgba(239, 68, 68, 0.9); border: 2px solid #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); animation: pulse-red 1s infinite;"><i class="fa-solid fa-paw"></i></div>`,
+    html: `<div style="background: rgba(239, 68, 68, 0.9); border: 2px solid #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.8);"><i class="fa-solid fa-paw"></i></div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17]
   });
@@ -206,12 +216,12 @@ function fetchReverseGeocode(lat, lng, titleEl, coordEl) {
 
 function getInstantRegionName(lat, lng) {
   // 1. ESP32 Specific Sensor Field Node Locations
-  if (Math.hypot(lat - 12.7080, lng - 77.6950) < 0.015) return "Anekal Village Agricultural Boundary (Karnataka)";
-  if (Math.hypot(lat - 12.7250, lng - 77.8180) < 0.015) return "Hosur Village Cultivation Belt (Tamil Nadu)";
-  if (Math.hypot(lat - 12.7680, lng - 77.6080) < 0.015) return "Kallubalu Village & Farmlands (Karnataka)";
-  if (Math.hypot(lat - 12.7420, lng - 77.5750) < 0.015) return "Ragihalli Village Settlement & Crop Belt (Karnataka)";
-  if (Math.hypot(lat - 12.8020, lng - 77.5820) < 0.015) return "Bannerghatta Village & Cultivated Fields (Karnataka)";
-  if (Math.hypot(lat - 12.6580, lng - 77.4650) < 0.015) return "Harohalli Village Agricultural Belt (Ramanagara, Karnataka)";
+  if (Math.hypot(lat - 12.8224, lng - 77.5770) < 0.015) return "Buthanahalli (Bannerghatta NP Fringe, KA)";
+  if (Math.hypot(lat - 12.79213, lng - 77.61622) < 0.015) return "Begihalli (Anekal Taluk, KA)";
+  if (Math.hypot(lat - 12.5195, lng - 77.8200) < 0.015) return "Bettamugilalam (Hosur-Denkanikottai, TN)";
+  if (Math.hypot(lat - 12.7180, lng - 77.5840) < 0.015) return "Ragihalli Village (Bengaluru Urban, KA)";
+  if (Math.hypot(lat - 12.6100, lng - 77.7100) < 0.015) return "Thammanayakanahalli (Anekal Area, Bengaluru Urban, KA)";
+  if (Math.hypot(lat - 12.5400, lng - 77.7800) < 0.015) return "Kadusivanapalli (Jawalagiri Area, Krishnagiri, TN)";
 
   // 2. TAMIL NADU STATE REGIONS (Exact Geofencing)
   if (lat >= 12.65 && lng >= 77.72 && lng <= 78.10) return "Hosur Sector, Krishnagiri District, Tamil Nadu";
@@ -263,3 +273,78 @@ function filterMap(category) {
     if (pathPolyline) leafletMap.addLayer(pathPolyline);
   }
 }
+
+let lastAlertedMapNodeId = null;
+
+function updateMapNodes(nodes, herdInfo) {
+  if (!leafletMap) return;
+
+  const nodeAlertIcon = L.divIcon({
+    className: 'custom-leaflet-icon',
+    html: `<div style="background: rgba(239, 68, 68, 0.95); border: 2px solid #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);"><i class="fa-solid fa-triangle-exclamation"></i></div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  });
+
+  const nodeSafeIcon = L.divIcon({
+    className: 'custom-leaflet-icon',
+    html: `<div style="background: rgba(16, 185, 129, 0.85); border: 2px solid #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;"><i class="fa-solid fa-microchip"></i></div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
+  });
+
+  // Clear previous dynamic risk circles
+  riskCircles.forEach(c => leafletMap.removeLayer(c));
+  riskCircles = [];
+
+  let alertNodeFound = null;
+
+  nodes.forEach((node, index) => {
+    const isAlert = node.status === 'ALERT';
+    if (isAlert) alertNodeFound = node;
+
+    // Match marker by array index or node ID
+    const marker = nodeMarkers[index];
+    if (marker) {
+      marker.setLatLng([node.lat, node.lng]);
+      marker.setIcon(isAlert ? nodeAlertIcon : nodeSafeIcon);
+      marker.setPopupContent(`
+        <div style="font-family: Inter, sans-serif; font-size: 12px; padding: 4px;">
+          <strong style="color: ${isAlert ? '#ef4444' : '#10b981'}; font-size: 14px;">${node.name}</strong><br/>
+          <strong>Status:</strong> ${isAlert ? '🚨 CRITICAL ELEPHANT INTRUSION' : 'SAFE / MONITORING'}<br/>
+          <strong>Location:</strong> ${node.location}<br/>
+          <strong>PIR Motion:</strong> ${node.pir ? 'Detected' : 'Clear'}<br/>
+          <strong>Ground Vibration:</strong> ${node.vibration} m/s²<br/>
+          <strong>Acoustic SPL:</strong> ${node.acoustic_db} dB<br/>
+          <strong>Sound Class:</strong> ${node.sound_class} (${node.confidence}%)<br/>
+          <strong>Battery/Solar:</strong> ${node.battery}% (${node.solar_v}V)
+        </div>
+      `);
+    }
+
+    if (isAlert) {
+      const circle = L.circle([node.lat, node.lng], {
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.2,
+        radius: 1500
+      }).addTo(leafletMap);
+      riskCircles.push(circle);
+    }
+  });
+
+  // Pan to alerted node area
+  if (alertNodeFound && lastAlertedMapNodeId !== alertNodeFound.id) {
+    lastAlertedMapNodeId = alertNodeFound.id;
+    leafletMap.flyTo([alertNodeFound.lat, alertNodeFound.lng], 13, { duration: 1.2 });
+    
+    // Open popup for alerted node
+    const alertedIndex = nodes.findIndex(n => n.id === alertNodeFound.id);
+    if (alertedIndex >= 0 && nodeMarkers[alertedIndex]) {
+      nodeMarkers[alertedIndex].openPopup();
+    }
+  } else if (!alertNodeFound) {
+    lastAlertedMapNodeId = null;
+  }
+}
+

@@ -94,3 +94,20 @@ function toggleNodeAlert(nodeId, isCurrentlyAlert) {
     }
   });
 }
+
+function triggerSelectedNodeAlert(nodeId) {
+  if (!nodeId) return;
+  const isReset = nodeId === 'RESET';
+  fetch('/api/simulate-node-alert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ node_id: isReset ? null : nodeId, reset: isReset })
+  })
+  .then(res => res.json())
+  .then(() => {
+    if (typeof fetchStatusAndNodes === 'function') {
+      fetchStatusAndNodes();
+    }
+  });
+}
+

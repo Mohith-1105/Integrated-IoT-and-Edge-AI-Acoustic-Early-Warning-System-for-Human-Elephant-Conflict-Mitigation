@@ -43,6 +43,13 @@ function startWaveformAnimation(sampleType) {
   if (animationId) cancelAnimationFrame(animationId);
   
   function draw() {
+    if (canvas.offsetWidth > 0 && canvas.width !== canvas.offsetWidth) {
+      canvas.width = canvas.offsetWidth;
+    }
+    if (canvas.offsetHeight > 0 && canvas.height !== canvas.offsetHeight) {
+      canvas.height = canvas.offsetHeight;
+    }
+
     ctx.fillStyle = '#040810';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
