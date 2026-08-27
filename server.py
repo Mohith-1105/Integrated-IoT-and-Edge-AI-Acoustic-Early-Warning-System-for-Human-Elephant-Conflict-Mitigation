@@ -10,7 +10,10 @@ import time
 import math
 import os
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, 
+            static_folder=os.path.join(base_dir, 'static'),
+            template_folder=os.path.join(base_dir, 'templates'))
 
 # Default Standby State for Bannerghatta National Park Fringe Village Nodes (All Clear / Safe)
 NODES_DATA = [
